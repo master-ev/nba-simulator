@@ -1,14 +1,20 @@
 package com.nba;
 
 public class Team {
+    private int id;
     private String name;
     private int wins;
     private int losses;
 
-    public Team(String name) {
+    public Team(int id, String name) {
+        this.id = id;
         this.name = name;
         this.wins = 0;
         this.losses = 0;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getName() {
