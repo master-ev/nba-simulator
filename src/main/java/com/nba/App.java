@@ -1,7 +1,6 @@
 package com.nba;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,21 +28,25 @@ public class App {
         List<Team> teams = new ArrayList<>(teamsById.values());
         Standings.compute(playedGames);
         Elo.computeRatings(playedGames);
-        Simulator sim = new Simulator();
         int numSeasons = 10000;
-        Map<Team, Integer> playoffCounts = sim.runManySeasons(teams, remainingGames, numSeasons);
+        Simulator winRateSim = new Simulator(false);
+        Map<Team, Integer> winRateCounts = winRateSim.runManySeasons(teams, remainingGames, numSeasons);
+        Simulator eloSim = new Simulator(true);
+        Map<Team, Integer> eloCounts = eloSim.runManySeasons(teams, remainingGames, numSeasons);
         for (Team team : teams) {
             team.resetRealRecord();
         }
         Standings.compute(games);
         Set<Team> actual = Backtest.actualPlayoffTeams(teams);
-        Backtest.report(teams, playoffCounts, actual, numSeasons);
-        List<Team> byRating = new ArrayList<>(teams);
-        byRating.sort(Comparator.comparingDouble(Team::getRating).reversed());
-        System.out.println("Elo ratings at cutoff:\n");
-        for (Team team : byRating) {
-            System.out.printf("%-25s %.0f%n", team.getName(), team.getRating());
+        double winRateBrier = Backtest.brierScore(teams, winRateCounts, actual, numSeasons);
+        double eloBrier = Backtest.brierScore(teams, eloCounts, actual, numSeasons);
+        System.out.println("Model comparison\n");
+        System.out.printf(" Win rate: %.4f%n", winRateBrier);
+        System.out.printf(" Elo:      %.4f%n", eloBrier);
+        if (eloBrier < winRateBrier) {
+            System.out.println("\nElo is better.");
+        } else {
+            System.out.println("\nWin rate is better.");
         }
-        System.out.println();
     }
 }

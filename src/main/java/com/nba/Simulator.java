@@ -9,13 +9,22 @@ import java.util.Random;
 
 public class Simulator {
     private Random random;
+    private boolean useElo;
 
-    public Simulator() {
+    public Simulator(boolean useElo) {
         this.random = new Random();
+        this.useElo = useElo;
     }
 
     public Team simulateGame(Team home, Team away) {
-        double homeWinProb = Elo.winProbability(home.getRating(), away.getRating());
+        double homeWinProb;
+        if (useElo) {
+            homeWinProb = Elo.winProbability(home.getRating(), away.getRating());
+        } else {
+            double homeStrength = home.winRate();
+            double awayStrength = away.winRate();
+            homeWinProb = homeStrength / (homeStrength + awayStrength);
+        }
         if (random.nextDouble() < homeWinProb) {
             return home;
         } else {

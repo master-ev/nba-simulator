@@ -36,4 +36,16 @@ public class Backtest {
             System.out.printf("%-25s %6.1f%%    %s%n", team.getName(), prob, madeIt);
         }
     }
+
+    public static double brierScore(List<Team> teams, Map<Team, Integer> playoffCounts, Set<Team> actual,
+            int numSeasons) {
+        double total = 0.0;
+        for (Team team : teams) {
+            double predicted = (double) playoffCounts.get(team) / numSeasons;
+            double outcome = actual.contains(team) ? 1.0 : 0.0;
+            double diff = predicted - outcome;
+            total = total + diff * diff;
+        }
+        return total / teams.size();
+    }
 }
