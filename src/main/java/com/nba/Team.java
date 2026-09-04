@@ -40,4 +40,12 @@ public class Team {
     public String toString() {
         return name + ": " + wins + "W " + losses + "L";
     }
+
+    public double winRate() {
+        int total = wins + losses;
+        if (total == 0) {
+            return 0.5;
+        }
+        return (double) wins / total;
+    }
 }

@@ -26,5 +26,20 @@ public class App {
         for (Team team : ranked) {
             System.out.println(team);
         }
+
+        Simulator sim = new Simulator();
+        Team a = teamsById.get(21);
+        Team b = teamsById.get(29);
+        int aWins = 0;
+        int trials = 10000;
+        for (int i = 0; i < trials; i++) {
+            if (sim.simulateGame(a, b) == a) {
+                aWins = aWins + 1;
+            }
+        }
+        System.out.println("\nSimulating " + a.getName() + " vs " + b.getName() + ":");
+        System.out.println(a.getName() + " win rate: " + a.winRate());
+        System.out.println(b.getName() + " win rate: " + b.winRate());
+        System.out.println(a.getName() + " won " + aWins + " of " + trials + " (" + (100.0 * aWins / trials) + "%)");
     }
 }
