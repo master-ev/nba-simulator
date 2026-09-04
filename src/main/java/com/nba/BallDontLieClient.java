@@ -56,7 +56,8 @@ public class BallDontLieClient {
             }
             int id = node.get("id").asInt();
             String name = node.get("full_name").asText();
-            teams.add(new Team(id, name));
+            String conf = node.get("conference").asText().trim();
+            teams.add(new Team(id, name, conf));
         }
         return teams;
     }

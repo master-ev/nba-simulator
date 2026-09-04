@@ -3,6 +3,7 @@ package com.nba;
 public class Team {
     private int id;
     private String name;
+    private String conference;
     private int wins;
     private int losses;
     private int simWins;
@@ -13,11 +14,16 @@ public class Team {
         this.simLosses = losses;
     }
 
-    public Team(int id, String name) {
+    public Team(int id, String name, String conference) {
         this.id = id;
         this.name = name;
+        this.conference = conference;
         this.wins = 0;
         this.losses = 0;
+    }
+
+    public String getConference() {
+        return conference;
     }
 
     public int getId() {

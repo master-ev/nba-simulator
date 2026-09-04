@@ -28,11 +28,17 @@ public class App {
         Standings.compute(playedGames);
         List<Team> teams = new ArrayList<>(teamsById.values());
         Simulator sim = new Simulator();
-        sim.simulateSeason(teams, remainingGames);
-        teams.sort(Comparator.comparingInt(Team::getSimWins).reversed());
-        System.out.println("Simulated final standings:\n");
+        int numSeasons = 10000;
+        System.out.println("Running " + numSeasons + " simulated seasons...\n");
+        long start = System.currentTimeMillis();
+        Map<Team, Integer> playoffCounts = sim.runManySeasons(teams, remainingGames, numSeasons);
+        long elapsed = System.currentTimeMillis() - start;
+        teams.sort(Comparator.comparingInt((Team t) -> playoffCounts.get(t)).reversed());
+        System.out.println("Playoff probabilities:\n");
         for (Team team : teams) {
-            System.out.println(team.getName() + ": " + team.getSimWins() + "W " + team.getSimLosses() + "L");
+            double prob = 100.0 * playoffCounts.get(team) / numSeasons;
+            System.out.printf("%-25s %.1f%%%n", team.getName(), prob);
         }
+        System.out.println("\n(" + numSeasons + " seasons in " + elapsed + " ms)");
     }
 }
