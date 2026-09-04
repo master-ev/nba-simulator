@@ -27,11 +27,20 @@ public class BallDontLieClient {
                 .header("Authorization", apiKey)
                 .GET()
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 200) {
+        int attempts = 0;
+        while (true) {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                return response.body();
+            }
+            if (response.statusCode() == 429 && attempts < 5) {
+                attempts = attempts + 1;
+                System.out.println("Rate limited, waiting 20s (attempt " + attempts + ")...");
+                Thread.sleep(20000);
+                continue;
+            }
             throw new RuntimeException("API returned status " + response.statusCode());
         }
-        return response.body();
     }
 
     public List<Team> getTeams() throws Exception {
@@ -62,31 +71,45 @@ public class BallDontLieClient {
     }
 
     public List<Game> getGames(int season, Map<Integer, Team> teamsById) throws Exception {
-        String json = get("/games?seasons[]=" + season + "&per_page=100");
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(json);
-        JsonNode data = root.get("data");
         List<Game> games = new ArrayList<>();
-        for (JsonNode node : data) {
-            int homeId = node.get("home_team").get("id").asInt();
-            int awayId = node.get("visitor_team").get("id").asInt();
-            Team home = teamsById.get(homeId);
-            Team away = teamsById.get(awayId);
-            if (home == null || away == null) {
-                continue;
+        ObjectMapper mapper = new ObjectMapper();
+        String cursor = null;
+        while (true) {
+            String url = "/games?seasons[]=" + season + "&per_page=100";
+            if (cursor != null) {
+                url = url + "&cursor=" + cursor;
             }
-            Game game = new Game(home, away);
-            String status = node.get("status").asText();
-            if (status.equals("Final")) {
-                int homeScore = node.get("home_team_score").asInt();
-                int awayScore = node.get("visitor_team_score").asInt();
-                if (homeScore > awayScore) {
-                    game.setWinner(home);
-                } else {
-                    game.setWinner(away);
+            String json = get(url);
+            JsonNode root = mapper.readTree(json);
+            JsonNode data = root.get("data");
+            for (JsonNode node : data) {
+                int homeId = node.get("home_team").get("id").asInt();
+                int awayId = node.get("visitor_team").get("id").asInt();
+                Team home = teamsById.get(homeId);
+                Team away = teamsById.get(awayId);
+                if (home == null || away == null) {
+                    continue;
                 }
+                Game game = new Game(home, away);
+                String status = node.get("status").asText();
+                if (status.equals("Final")) {
+                    int homeScore = node.get("home_team_score").asInt();
+                    int awayScore = node.get("visitor_team_score").asInt();
+                    if (homeScore > awayScore) {
+                        game.setWinner(home);
+                    } else {
+                        game.setWinner(away);
+                    }
+                }
+                games.add(game);
             }
-            games.add(game);
+            JsonNode meta = root.get("meta");
+            JsonNode nextCursor = meta.get("next_cursor");
+            if (nextCursor == null || nextCursor.isNull()) {
+                break;
+            }
+            cursor = nextCursor.asText();
+            Thread.sleep(15000);
         }
         return games;
     }
