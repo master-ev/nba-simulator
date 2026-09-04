@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class App {
     public static void main(String[] args) throws Exception {
@@ -25,20 +26,16 @@ public class App {
         List<Game> playedGames = games.subList(0, cutoff);
         List<Game> remainingGames = games.subList(cutoff, games.size());
         System.out.println("Cutoff: " + cutoff + " games played, " + remainingGames.size() + " to simulate\n");
-        Standings.compute(playedGames);
         List<Team> teams = new ArrayList<>(teamsById.values());
+        Standings.compute(playedGames);
         Simulator sim = new Simulator();
         int numSeasons = 10000;
-        System.out.println("Running " + numSeasons + " simulated seasons...\n");
-        long start = System.currentTimeMillis();
         Map<Team, Integer> playoffCounts = sim.runManySeasons(teams, remainingGames, numSeasons);
-        long elapsed = System.currentTimeMillis() - start;
-        teams.sort(Comparator.comparingInt((Team t) -> playoffCounts.get(t)).reversed());
-        System.out.println("Playoff probabilities:\n");
         for (Team team : teams) {
-            double prob = 100.0 * playoffCounts.get(team) / numSeasons;
-            System.out.printf("%-25s %.1f%%%n", team.getName(), prob);
+            team.resetRealRecord();
         }
-        System.out.println("\n(" + numSeasons + " seasons in " + elapsed + " ms)");
+        Standings.compute(games);
+        Set<Team> actual = Backtest.actualPlayoffTeams(teams);
+        Backtest.report(teams, playoffCounts, actual, numSeasons);
     }
 }

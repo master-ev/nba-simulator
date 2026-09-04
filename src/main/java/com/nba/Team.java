@@ -77,4 +77,9 @@ public class Team {
     public int getSimLosses() {
         return simLosses;
     }
+
+    public void resetRealRecord() {
+        this.wins = 0;
+        this.losses = 0;
+    }
 }
