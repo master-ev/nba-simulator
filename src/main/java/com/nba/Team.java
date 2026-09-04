@@ -5,6 +5,13 @@ public class Team {
     private String name;
     private int wins;
     private int losses;
+    private int simWins;
+    private int simLosses;
+
+    public void resetSim() {
+        this.simWins = wins;
+        this.simLosses = losses;
+    }
 
     public Team(int id, String name) {
         this.id = id;
@@ -47,5 +54,21 @@ public class Team {
             return 0.5;
         }
         return (double) wins / total;
+    }
+
+    public void addSimWin() {
+        this.simWins = this.simWins + 1;
+    }
+
+    public void addSimLoss() {
+        this.simLosses = this.simLosses + 1;
+    }
+
+    public int getSimWins() {
+        return simWins;
+    }
+
+    public int getSimLosses() {
+        return simLosses;
     }
 }

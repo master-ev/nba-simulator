@@ -1,5 +1,6 @@
 package com.nba;
 
+import java.util.List;
 import java.util.Random;
 
 public class Simulator {
@@ -17,6 +18,25 @@ public class Simulator {
             return home;
         } else {
             return away;
+        }
+    }
+
+    public void simulateSeason(List<Team> teams, List<Game> gamesToSimulate) {
+        for (Team team : teams) {
+            team.resetSim();
+        }
+
+        for (Game game : gamesToSimulate) {
+            Team home = game.getHomeTeam();
+            Team away = game.getAwayTeam();
+            Team winner = simulateGame(home, away);
+            if (winner == home) {
+                home.addSimWin();
+                away.addSimLoss();
+            } else {
+                away.addSimWin();
+                home.addSimLoss();
+            }
         }
     }
 }

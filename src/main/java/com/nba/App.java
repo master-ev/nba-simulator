@@ -1,6 +1,7 @@
 package com.nba;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -20,26 +21,18 @@ public class App {
             GameStore.save(games, cacheFile);
             System.out.println("Saved to cache.");
         }
-        Standings.compute(games);
-        List<Team> ranked = Standings.sortedByWins(new ArrayList<>(teamsById.values()));
-        System.out.println("\nStandings (from " + games.size() + " games):\n");
-        for (Team team : ranked) {
-            System.out.println(team);
-        }
-
+        int cutoff = (int) (games.size() * 0.7);
+        List<Game> playedGames = games.subList(0, cutoff);
+        List<Game> remainingGames = games.subList(cutoff, games.size());
+        System.out.println("Cutoff: " + cutoff + " games played, " + remainingGames.size() + " to simulate\n");
+        Standings.compute(playedGames);
+        List<Team> teams = new ArrayList<>(teamsById.values());
         Simulator sim = new Simulator();
-        Team a = teamsById.get(21);
-        Team b = teamsById.get(29);
-        int aWins = 0;
-        int trials = 10000;
-        for (int i = 0; i < trials; i++) {
-            if (sim.simulateGame(a, b) == a) {
-                aWins = aWins + 1;
-            }
+        sim.simulateSeason(teams, remainingGames);
+        teams.sort(Comparator.comparingInt(Team::getSimWins).reversed());
+        System.out.println("Simulated final standings:\n");
+        for (Team team : teams) {
+            System.out.println(team.getName() + ": " + team.getSimWins() + "W " + team.getSimLosses() + "L");
         }
-        System.out.println("\nSimulating " + a.getName() + " vs " + b.getName() + ":");
-        System.out.println(a.getName() + " win rate: " + a.winRate());
-        System.out.println(b.getName() + " win rate: " + b.winRate());
-        System.out.println(a.getName() + " won " + aWins + " of " + trials + " (" + (100.0 * aWins / trials) + "%)");
     }
 }
