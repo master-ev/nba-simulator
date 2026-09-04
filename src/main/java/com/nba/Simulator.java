@@ -15,9 +15,7 @@ public class Simulator {
     }
 
     public Team simulateGame(Team home, Team away) {
-        double homeStrength = home.winRate();
-        double awayStrength = away.winRate();
-        double homeWinProb = homeStrength / (homeStrength + awayStrength);
+        double homeWinProb = Elo.winProbability(home.getRating(), away.getRating());
         if (random.nextDouble() < homeWinProb) {
             return home;
         } else {

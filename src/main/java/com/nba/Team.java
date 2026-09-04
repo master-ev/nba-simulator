@@ -8,6 +8,7 @@ public class Team {
     private int losses;
     private int simWins;
     private int simLosses;
+    private double rating = 1500.0; // league average
 
     public void resetSim() {
         this.simWins = wins;
@@ -81,5 +82,13 @@ public class Team {
     public void resetRealRecord() {
         this.wins = 0;
         this.losses = 0;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
     }
 }

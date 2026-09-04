@@ -28,6 +28,7 @@ public class App {
         System.out.println("Cutoff: " + cutoff + " games played, " + remainingGames.size() + " to simulate\n");
         List<Team> teams = new ArrayList<>(teamsById.values());
         Standings.compute(playedGames);
+        Elo.computeRatings(playedGames);
         Simulator sim = new Simulator();
         int numSeasons = 10000;
         Map<Team, Integer> playoffCounts = sim.runManySeasons(teams, remainingGames, numSeasons);
@@ -37,5 +38,12 @@ public class App {
         Standings.compute(games);
         Set<Team> actual = Backtest.actualPlayoffTeams(teams);
         Backtest.report(teams, playoffCounts, actual, numSeasons);
+        List<Team> byRating = new ArrayList<>(teams);
+        byRating.sort(Comparator.comparingDouble(Team::getRating).reversed());
+        System.out.println("Elo ratings at cutoff:\n");
+        for (Team team : byRating) {
+            System.out.printf("%-25s %.0f%n", team.getName(), team.getRating());
+        }
+        System.out.println();
     }
 }
