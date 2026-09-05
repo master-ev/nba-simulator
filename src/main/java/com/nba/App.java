@@ -1,15 +1,16 @@
 package com.nba;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class App {
     public static void main(String[] args) throws Exception {
         BallDontLieClient client = new BallDontLieClient();
         Map<Integer, Team> teamsById = client.getTeamsById();
-        String cacheFile = "games-2024.csv";
+        int season = 2025;
+        String cacheFile = "games-" + season + ".csv";
         List<Game> games;
         java.io.File file = new java.io.File(cacheFile);
         if (file.exists()) {
@@ -17,7 +18,7 @@ public class App {
             games = GameStore.load(cacheFile, teamsById);
         } else {
             System.out.println("Fetching games from API...");
-            games = client.getGames(2024, teamsById);
+            games = client.getGames(season, teamsById);
             GameStore.save(games, cacheFile);
             System.out.println("Saved to cache.");
         }
@@ -29,28 +30,19 @@ public class App {
         Standings.compute(playedGames);
         Elo.computeRatings(playedGames);
         int numSeasons = 10000;
-        Simulator sim = new Simulator(false);
-        Map<Team, int[]> seedCounts = sim.runSeedSimulations(teams, remainingGames, numSeasons);
-        List<Team> east = new ArrayList<>();
+        Simulator winRateSim = new Simulator(false);
+        Map<Team, Integer> winRateCounts = winRateSim.runManySeasons(teams, remainingGames, numSeasons);
+        Simulator eloSim = new Simulator(true);
+        Map<Team, Integer> eloCounts = eloSim.runManySeasons(teams, remainingGames, numSeasons);
         for (Team team : teams) {
-            if (team.getConference().equals("East")) {
-                east.add(team);
-            }
+            team.resetRealRecord();
         }
-        east.sort(Comparator.comparingInt((Team t) -> seedCounts.get(t)[1]).reversed());
-        System.out.println("East seed distribution:\n");
-        System.out.printf("%-25s", "Team");
-        for (int seed = 1; seed <= 8; seed++) {
-            System.out.printf("%6d", seed);
-        }
-        System.out.println();
-        for (Team team : east) {
-            System.out.printf("%-25s", team.getName());
-            for (int seed = 1; seed <= 8; seed++) {
-                double pct = 100.0 * seedCounts.get(team)[seed] / numSeasons;
-                System.out.printf("%5.0f%%", pct);
-            }
-            System.out.println();
-        }
+        Standings.compute(games);
+        Set<Team> actual = Backtest.actualPlayoffTeams(teams);
+        double winRateBrier = Backtest.brierScore(teams, winRateCounts, actual, numSeasons);
+        double eloBrier = Backtest.brierScore(teams, eloCounts, actual, numSeasons);
+        System.out.println("Season " + season + " model comparison:\n");
+        System.out.printf(" Win rate: %.4f%n", winRateBrier);
+        System.out.printf(" Elo:      %.4f%n", eloBrier);
     }
 }
