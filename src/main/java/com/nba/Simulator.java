@@ -83,4 +83,64 @@ public class Simulator {
         playoffs.addAll(west.subList(0, 8));
         return playoffs;
     }
+
+    public Team simulateSeries(Team a, Team b) {
+        int aWins = 0;
+        int bWins = 0;
+        while (aWins < 4 && bWins < 4) {
+            Team gameWinner = simulateGame(a, b);
+            if (gameWinner == a) {
+                aWins = aWins + 1;
+            } else {
+                bWins = bWins + 1;
+            }
+        }
+        if (aWins == 4) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+
+    public Team simulateConference(List<Team> seeds) {
+        Team w1 = simulateSeries(seeds.get(0), seeds.get(7));
+        Team w2 = simulateSeries(seeds.get(1), seeds.get(6));
+        Team w3 = simulateSeries(seeds.get(2), seeds.get(5));
+        Team w4 = simulateSeries(seeds.get(3), seeds.get(4));
+        Team s1 = simulateSeries(w1, w4);
+        Team s2 = simulateSeries(w2, w3);
+        return simulateSeries(s1, s2);
+    }
+
+    public Team simulatePlayoffs(List<Team> teams) {
+        List<Team> east = new ArrayList<>();
+        List<Team> west = new ArrayList<>();
+        for (Team team : teams) {
+            if (team.getConference().equals("East")) {
+                east.add(team);
+            } else {
+                west.add(team);
+            }
+        }
+        east.sort(Comparator.comparingInt(Team::getSimWins).reversed());
+        west.sort(Comparator.comparingInt(Team::getSimWins).reversed());
+        List<Team> eastSeeds = east.subList(0, 8);
+        List<Team> westSeeds = west.subList(0, 8);
+        Team eastChamp = simulateConference(eastSeeds);
+        Team westChamp = simulateConference(westSeeds);
+        return simulateSeries(eastChamp, westChamp);
+    }
+
+    public Map<Team, Integer> runTitleSimulations(List<Team> teams, List<Game> remainingGames, int numSeasons) {
+        Map<Team, Integer> titleCounts = new HashMap<>();
+        for (Team team : teams) {
+            titleCounts.put(team, 0);
+        }
+        for (int season = 0; season < numSeasons; season++) {
+            simulateSeason(teams, remainingGames);
+            Team champion = simulatePlayoffs(teams);
+            titleCounts.put(champion, titleCounts.get(champion) + 1);
+        }
+        return titleCounts;
+    }
 }

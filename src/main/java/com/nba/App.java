@@ -1,9 +1,9 @@
 package com.nba;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class App {
     public static void main(String[] args) throws Exception {
@@ -29,24 +29,15 @@ public class App {
         Standings.compute(playedGames);
         Elo.computeRatings(playedGames);
         int numSeasons = 10000;
-        Simulator winRateSim = new Simulator(false);
-        Map<Team, Integer> winRateCounts = winRateSim.runManySeasons(teams, remainingGames, numSeasons);
-        Simulator eloSim = new Simulator(true);
-        Map<Team, Integer> eloCounts = eloSim.runManySeasons(teams, remainingGames, numSeasons);
+        Simulator sim = new Simulator(false);
+        Map<Team, Integer> titleCounts = sim.runTitleSimulations(teams, remainingGames, numSeasons);
+        teams.sort(Comparator.comparingInt((Team t) -> titleCounts.get(t)).reversed());
+        System.out.println("Title probabilities:\n");
         for (Team team : teams) {
-            team.resetRealRecord();
-        }
-        Standings.compute(games);
-        Set<Team> actual = Backtest.actualPlayoffTeams(teams);
-        double winRateBrier = Backtest.brierScore(teams, winRateCounts, actual, numSeasons);
-        double eloBrier = Backtest.brierScore(teams, eloCounts, actual, numSeasons);
-        System.out.println("Model comparison\n");
-        System.out.printf(" Win rate: %.4f%n", winRateBrier);
-        System.out.printf(" Elo:      %.4f%n", eloBrier);
-        if (eloBrier < winRateBrier) {
-            System.out.println("\nElo is better.");
-        } else {
-            System.out.println("\nWin rate is better.");
+            double prob = 100.0 * titleCounts.get(team) / numSeasons;
+            if (prob > 0.05) {
+                System.out.printf("%-25s %.1f%%%n", team.getName(), prob);
+            }
         }
     }
 }
