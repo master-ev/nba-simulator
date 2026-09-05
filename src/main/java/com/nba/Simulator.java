@@ -143,4 +143,36 @@ public class Simulator {
         }
         return titleCounts;
     }
+
+    public Map<Team, int[]> runSeedSimulations(List<Team> teams, List<Game> remainingGames, int numSeasons) {
+        Map<Team, int[]> seedCounts = new HashMap<>();
+        for (Team team : teams) {
+            seedCounts.put(team, new int[16]);
+        }
+        for (int season = 0; season < numSeasons; season++) {
+            simulateSeason(teams, remainingGames);
+            List<Team> east = new ArrayList<>();
+            List<Team> west = new ArrayList<>();
+            for (Team team : teams) {
+                if (team.getConference().equals("East")) {
+                    east.add(team);
+                } else {
+                    west.add(team);
+                }
+            }
+            east.sort(Comparator.comparingInt(Team::getSimWins).reversed());
+            west.sort(Comparator.comparingInt(Team::getSimWins).reversed());
+            recordSeeds(east, seedCounts);
+            recordSeeds(west, seedCounts);
+        }
+        return seedCounts;
+    }
+
+    private void recordSeeds(List<Team> ranked, Map<Team, int[]> seedCounts) {
+        for (int i = 0; i < ranked.size(); i++) {
+            Team team = ranked.get(i);
+            int seed = i + 1;
+            seedCounts.get(team)[seed]++;
+        }
+    }
 }

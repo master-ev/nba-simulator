@@ -30,14 +30,27 @@ public class App {
         Elo.computeRatings(playedGames);
         int numSeasons = 10000;
         Simulator sim = new Simulator(false);
-        Map<Team, Integer> titleCounts = sim.runTitleSimulations(teams, remainingGames, numSeasons);
-        teams.sort(Comparator.comparingInt((Team t) -> titleCounts.get(t)).reversed());
-        System.out.println("Title probabilities:\n");
+        Map<Team, int[]> seedCounts = sim.runSeedSimulations(teams, remainingGames, numSeasons);
+        List<Team> east = new ArrayList<>();
         for (Team team : teams) {
-            double prob = 100.0 * titleCounts.get(team) / numSeasons;
-            if (prob > 0.05) {
-                System.out.printf("%-25s %.1f%%%n", team.getName(), prob);
+            if (team.getConference().equals("East")) {
+                east.add(team);
             }
+        }
+        east.sort(Comparator.comparingInt((Team t) -> seedCounts.get(t)[1]).reversed());
+        System.out.println("East seed distribution:\n");
+        System.out.printf("%-25s", "Team");
+        for (int seed = 1; seed <= 8; seed++) {
+            System.out.printf("%6d", seed);
+        }
+        System.out.println();
+        for (Team team : east) {
+            System.out.printf("%-25s", team.getName());
+            for (int seed = 1; seed <= 8; seed++) {
+                double pct = 100.0 * seedCounts.get(team)[seed] / numSeasons;
+                System.out.printf("%5.0f%%", pct);
+            }
+            System.out.println();
         }
     }
 }
