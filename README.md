@@ -17,6 +17,7 @@ Two ways to estimate a game's win probability:
 To compare them I backtested: cut a finished season at 70%, simulate the rest, and score the predictions against what actually happened with Brier score (mean squared error, lower is better).
 
 `Season 2024-2025 win rate 0.0463 elo 0.0560`
+
 `Season 2025-2026 win rate 0.0411 elo 0.0494`
 
 Win rate came out ahead both times. Elo starts cold mid-season and leans on recent form, but making the playoffs is a cumulative-record question, so the simpler model does better here. Not what I expected going in.
