@@ -64,5 +64,7 @@ public class Analysis {
         System.out.println("Model comparison:\n");
         System.out.printf(" Win rate: %.4f%n", winRateBrier);
         System.out.printf(" Elo:      %.4f%n", eloBrier);
+        System.out.println();
+        Backtest.report(teams, winRateCounts, actual, numSeasons);
     }
 }
