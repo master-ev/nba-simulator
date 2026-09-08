@@ -124,8 +124,8 @@ public class Simulator {
         }
         east.sort(Comparator.comparingInt(Team::getSimWins).reversed());
         west.sort(Comparator.comparingInt(Team::getSimWins).reversed());
-        List<Team> eastSeeds = east.subList(0, 8);
-        List<Team> westSeeds = west.subList(0, 8);
+        List<Team> eastSeeds = applyPlayIn(east);
+        List<Team> westSeeds = applyPlayIn(west);
         Team eastChamp = simulateConference(eastSeeds);
         Team westChamp = simulateConference(westSeeds);
         return simulateSeries(eastChamp, westChamp);
@@ -174,5 +174,25 @@ public class Simulator {
             int seed = i + 1;
             seedCounts.get(team)[seed]++;
         }
+    }
+
+    public List<Team> applyPlayIn(List<Team> ranked) {
+        List<Team> playoffSeeds = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            playoffSeeds.add(ranked.get(i));
+        }
+        Team seventh = ranked.get(6);
+        Team eighth = ranked.get(7);
+        Team ninth = ranked.get(8);
+        Team tenth = ranked.get(9);
+        // winner gets seed 7
+        Team winner78 = simulateGame(seventh, eighth);
+        Team loser78 = (winner78 == seventh) ? eighth : seventh;
+        // loser eliminated
+        Team winner910 = simulateGame(ninth, tenth);
+        Team seed8 = simulateGame(loser78, winner910);
+        playoffSeeds.add(winner78);
+        playoffSeeds.add(seed8);
+        return playoffSeeds;
     }
 }
