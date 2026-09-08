@@ -110,4 +110,19 @@ public class Analysis {
             System.out.printf(" K = %5.0f   %.4f%n", k, brier);
         }
     }
+
+    public static void playoffChartHtml(SeasonData data, boolean useElo, int numSeasons) throws Exception {
+        List<Team> teams = data.getTeams();
+        for (Team team : teams) {
+            team.resetRealRecord();
+            team.setRating(1500.0);
+        }
+        Standings.compute(data.getPlayedGames());
+        Elo.computeRatings(data.getPlayedGames());
+        Simulator sim = new Simulator(useElo);
+        Map<Team, Integer> counts = sim.runManySeasons(teams, data.getRemainingGames(), numSeasons);
+        teams.sort(Comparator.comparingInt((Team t) -> counts.get(t)).reversed());
+        HtmlReport.playoffChart(teams, counts, numSeasons, "playoff-report.html");
+        System.out.println("Wrote playoff-report.html");
+    }
 }

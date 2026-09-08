@@ -13,6 +13,8 @@ public class App {
             Analysis.compareModels(data, config.sims);
         } else if (config.analysis.equals("tunek")) {
             Analysis.tuneK(data, config.sims);
+        } else if (config.analysis.equals("chart")) {
+            Analysis.playoffChartHtml(data, config.useElo, config.sims);
         } else {
             System.out.println("Unknown analysis: " + config.analysis);
             System.out.println("Options: playoffs, title, compare");
