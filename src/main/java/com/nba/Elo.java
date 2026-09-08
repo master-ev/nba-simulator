@@ -4,6 +4,7 @@ import java.util.List;
 
 public class Elo {
     public static final double K = 20.0;
+    public static final double HOME_ADVANTAGE = 100.0;
 
     public static double winProbability(double ratingA, double ratingB) {
         return 1.0 / (1.0 + Math.pow(10, (ratingB - ratingA) / 400.0));
@@ -11,6 +12,10 @@ public class Elo {
 
     public static double updateRating(double rating, double expected, double result) {
         return rating + K * (result - expected);
+    }
+
+    public static double homeWinProbability(double homeRating, double awayRating) {
+        return winProbability(homeRating + HOME_ADVANTAGE, awayRating);
     }
 
     public static void regressToMean(List<Team> teams, double keepFactor) {
