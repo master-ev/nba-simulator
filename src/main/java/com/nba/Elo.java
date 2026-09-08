@@ -3,7 +3,7 @@ package com.nba;
 import java.util.List;
 
 public class Elo {
-    public static final double K = 20.0;
+    public static double K = 5.0;
     public static final double HOME_ADVANTAGE = 100.0;
 
     public static double winProbability(double ratingA, double ratingB) {
@@ -46,5 +46,9 @@ public class Elo {
             home.setRating(updateRating(home.getRating(), homeExpected, homeResult));
             away.setRating(updateRating(away.getRating(), awayExpected, awayResult));
         }
+    }
+
+    public static void setK(double value) {
+        K = value;
     }
 }

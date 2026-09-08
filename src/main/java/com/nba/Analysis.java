@@ -86,4 +86,28 @@ public class Analysis {
         System.out.println();
         Backtest.report(teams, winRateCounts, actual, numSeasons);
     }
+
+    public static void tuneK(SeasonData data, int numSeasons) throws Exception {
+        double[] kValues = { 5, 10, 20, 40, 60 };
+        List<Team> teams = data.getTeams();
+        for (Team team : teams) {
+            team.resetRealRecord();
+        }
+        Standings.compute(data.getAllGames());
+        Set<Team> actual = Backtest.actualPlayoffTeams(teams);
+        System.out.println("Tuning K:\n");
+        for (double k : kValues) {
+            Elo.setK(k);
+            for (Team team : teams) {
+                team.resetRealRecord();
+                team.setRating(1500.0);
+            }
+            Standings.compute(data.getPlayedGames());
+            Elo.computeRatings(data.getPlayedGames());
+            Simulator sim = new Simulator(true);
+            Map<Team, Integer> counts = sim.runManySeasons(teams, data.getRemainingGames(), numSeasons);
+            double brier = Backtest.brierScore(teams, counts, actual, numSeasons);
+            System.out.printf(" K = %5.0f   %.4f%n", k, brier);
+        }
+    }
 }
