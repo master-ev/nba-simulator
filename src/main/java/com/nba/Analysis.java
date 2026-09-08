@@ -42,13 +42,31 @@ public class Analysis {
         }
     }
 
+    public static void seedRatingsFromPreviousSeason(int previousSeason, Map<Integer, Team> teamsById)
+            throws Exception {
+        String cacheFile = "games-" + previousSeason + ".csv";
+        java.io.File file = new java.io.File(cacheFile);
+        List<Game> prevGames;
+        if (file.exists()) {
+            prevGames = GameStore.load(cacheFile, teamsById);
+        } else {
+            BallDontLieClient client = new BallDontLieClient();
+            prevGames = client.getGames(previousSeason, teamsById);
+            GameStore.save(prevGames, cacheFile);
+        }
+        Elo.computeRatings(prevGames);
+        Elo.regressToMean(new java.util.ArrayList<>(teamsById.values()), 0.0);
+    }
+
     // win rate vs Elo
-    public static void compareModels(SeasonData data, int numSeasons) {
+    public static void compareModels(SeasonData data, int numSeasons) throws Exception {
         List<Team> teams = data.getTeams();
         for (Team team : teams) {
             team.resetRealRecord();
         }
         Standings.compute(data.getPlayedGames());
+        // Analysis.seedRatingsFromPreviousSeason(data.getSeason() - 1,
+        // data.getTeamsById());
         Elo.computeRatings(data.getPlayedGames());
         Simulator winRateSim = new Simulator(false);
         Map<Team, Integer> winRateCounts = winRateSim.runManySeasons(teams, data.getRemainingGames(), numSeasons);

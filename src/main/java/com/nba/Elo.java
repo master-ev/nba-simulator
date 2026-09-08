@@ -13,6 +13,13 @@ public class Elo {
         return rating + K * (result - expected);
     }
 
+    public static void regressToMean(List<Team> teams, double keepFactor) {
+        for (Team team : teams) {
+            double regressed = 1500.0 + keepFactor * (team.getRating() - 1500.0);
+            team.setRating(regressed);
+        }
+    }
+
     public static void computeRatings(List<Game> playedGames) {
         for (Game game : playedGames) {
             if (!game.isPlayed()) {

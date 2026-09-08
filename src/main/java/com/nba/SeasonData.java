@@ -10,9 +10,11 @@ public class SeasonData {
     private List<Game> allGames;
     private List<Game> playedGames;
     private List<Game> remainingGames;
+    private int season;
 
     public SeasonData(int season, double cutoffFraction) throws Exception {
         BallDontLieClient client = new BallDontLieClient();
+        this.season = season;
         this.teamsById = client.getTeamsById();
         this.teams = new ArrayList<>(teamsById.values());
         String cacheFile = "games-" + season + ".csv";
@@ -45,4 +47,11 @@ public class SeasonData {
         return remainingGames;
     }
 
+    public Map<Integer, Team> getTeamsById() {
+        return teamsById;
+    }
+
+    public int getSeason() {
+        return season;
+    }
 }
