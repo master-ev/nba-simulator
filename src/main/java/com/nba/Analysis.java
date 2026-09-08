@@ -125,4 +125,25 @@ public class Analysis {
         HtmlReport.playoffChart(teams, counts, numSeasons, "playoff-report.html");
         System.out.println("Wrote playoff-report.html");
     }
+
+    public static void seedHeatmapHtml(SeasonData data, boolean useElo, int numSeasons) throws Exception {
+        List<Team> teams = data.getTeams();
+        for (Team team : teams) {
+            team.resetRealRecord();
+            team.setRating(1500.0);
+        }
+        Standings.compute(data.getPlayedGames());
+        Elo.computeRatings(data.getPlayedGames());
+        Simulator sim = new Simulator(useElo);
+        Map<Team, int[]> seedCounts = sim.runSeedSimulations(teams, data.getRemainingGames(), numSeasons);
+        List<Team> east = new java.util.ArrayList<>();
+        for (Team team : teams) {
+            if (team.getConference().equals("East")) {
+                east.add(team);
+            }
+        }
+        east.sort(Comparator.comparingInt((Team t) -> seedCounts.get(t)[1]).reversed());
+        HtmlReport.seedHeatmap(east, seedCounts, numSeasons, 8, "seed-heatmap.html");
+        System.out.println("Wrote seed-heatmap.html");
+    }
 }

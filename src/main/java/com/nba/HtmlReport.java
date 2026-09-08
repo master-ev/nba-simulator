@@ -36,4 +36,38 @@ public class HtmlReport {
         w.write("</body></html>\n");
         w.close();
     }
+
+    public static void seedHeatmap(List<Team> teams, Map<Team, int[]> seedCounts, int numSeasons, int maxSeed,
+            String filename) throws IOException {
+        FileWriter w = new FileWriter(filename);
+        w.write("<!DOCTYPE html>\n");
+        w.write("<html><head><meta charset='utf-8'>\n");
+        w.write("<title>Seed Distribution</title>\n");
+        w.write("<style>\n");
+        w.write("body { font-family: sans-serif; background: #111; color: #eee; padding: 30px; }\n");
+        w.write("table { border-collapse: collapse; }\n");
+        w.write("td, th { width: 44px; height: 30px; text-align: center; font-size: 12px; }\n");
+        w.write("th.name, td.name { width: 190px; text-align: right; padding-right: 10px; }\n");
+        w.write("</style></head><body>\n");
+        w.write("<h1>Seed Distribution</h1>\n");
+        w.write("<table>\n");
+        w.write("<tr><th class='name'>Team</th>");
+        for (int seed = 1; seed <= maxSeed; seed++) {
+            w.write("<th>" + seed + "</th>");
+        }
+        w.write("</tr>\n");
+        for (Team team : teams) {
+            w.write("<tr><td class='name'>" + team.getName() + "</td>");
+            for (int seed = 1; seed <= maxSeed; seed++) {
+                double pct = 100.0 * seedCounts.get(team)[seed] / numSeasons;
+                int intensity = (int) (pct / 100.0 * 255);
+                String bg = "rgb(" + (intensity / 4) + "," + (intensity / 2) + "," + intensity + ")";
+                String label = pct >= 1.0 ? String.format("%.0f", pct) : "";
+                w.write("<td style='background:" + bg + ";'>" + label + "</td>");
+            }
+            w.write("</tr>\n");
+        }
+        w.write("</table>\n</body></html>\n");
+        w.close();
+    }
 }
