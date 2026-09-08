@@ -65,6 +65,7 @@ public class Analysis {
             team.resetRealRecord();
         }
         Standings.compute(data.getPlayedGames());
+        // tried seeding elo from the previous season here
         // Analysis.seedRatingsFromPreviousSeason(data.getSeason() - 1,
         // data.getTeamsById());
         Elo.computeRatings(data.getPlayedGames());
