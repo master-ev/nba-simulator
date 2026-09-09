@@ -13,9 +13,11 @@ do that for every game to get one season, repeat, and tally the outcomes.
 Data (teams + every game) comes from the balldontlie API, cached to disk after
 the first fetch. The playoff bracket includes the play-in tournament (seeds 7-10).
 
-![Playoff probabilities](docs/playoff%20bars.png)
-![Seed distribution - Eastern Conference](docs/Eastern%20Conference.png)
-![Seed distribution - Western Conference](docs/Western%20Conference.png)
+<img src="docs/playoff%20bars.png" width="700" alt="Playoff probabilities">
+<br>
+<img src="docs/Eastern%20Conference.png" width="700" alt="Seed distribution - East">
+<br>
+<img src="docs/Western%20Conference.png" width="700" alt="Seed distribution - West">
 
 ## Two models, and tuning them
 
