@@ -146,4 +146,33 @@ public class Analysis {
         HtmlReport.seedHeatmap(east, seedCounts, numSeasons, 8, "seed-heatmap.html");
         System.out.println("Wrote seed-heatmap.html");
     }
+
+    public static void generateReports(SeasonData data, boolean useElo, int numSeasons) throws Exception {
+        List<Team> teams = data.getTeams();
+        for (Team team : teams) {
+            team.resetRealRecord();
+            team.setRating(1500.0);
+        }
+        Standings.compute(data.getPlayedGames());
+        Elo.computeRatings(data.getPlayedGames());
+        Simulator sim = new Simulator(useElo);
+        Map<Team, Integer> playoffCounts = sim.runManySeasons(teams, data.getRemainingGames(), numSeasons);
+        List<Team> byPlayoff = new java.util.ArrayList<>(teams);
+        byPlayoff.sort(Comparator.comparingInt((Team t) -> playoffCounts.get(t)).reversed());
+        HtmlReport.playoffChart(byPlayoff, playoffCounts, numSeasons, "playoff-report.html");
+        Map<Team, int[]> seedCounts = sim.runSeedSimulations(teams, data.getRemainingGames(), numSeasons);
+        List<Team> east = new java.util.ArrayList<>();
+        List<Team> west = new java.util.ArrayList<>();
+        for (Team team : teams) {
+            if (team.getConference().equals("East"))
+                east.add(team);
+            else
+                west.add(team);
+        }
+        east.sort(Comparator.comparingInt((Team t) -> seedCounts.get(t)[1]).reversed());
+        west.sort(Comparator.comparingInt((Team t) -> seedCounts.get(t)[1]).reversed());
+        HtmlReport.seedHeatmapFull(east, west, seedCounts, numSeasons, 8, "seed-heatmap.html");
+        HtmlReport.writeIndex(data.getSeason(), "index.html");
+        System.out.println("Wrote index.html, playoff-report.html, seed-heatmap.html");
+    }
 }
